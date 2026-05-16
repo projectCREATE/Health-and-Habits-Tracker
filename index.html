@@ -349,13 +349,13 @@ body::after{content:'';position:fixed;bottom:80px;right:-60px;width:260px;height
 <div class="toast" id="toast"></div>
 
 <!-- Google Identity Services -->
-<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://accounts.google.com/gsi/client"></script>
 
 <script>
 // ─────────────────────────────────────────────────────────────
 // CONFIG — replace CLIENT_ID after Google Cloud setup
 // ─────────────────────────────────────────────────────────────
-const CLIENT_ID = '392095868884-9gb7tsglgqqvug88st73bsfvbtvnqdbn.apps.googleusercontent.com';
+const CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
 const DRIVE_FILE_NAME = 'wellness-data.json';
 
@@ -559,13 +559,6 @@ function showApp() {
 
 // Try restore token on load
 window.addEventListener('load', async () => {
-  // Wait for Google script
-  await new Promise(r => {
-    if(window.google) { r(); return; }
-    const check = setInterval(() => { if(window.google){clearInterval(check);r();} }, 100);
-    setTimeout(() => { clearInterval(check); r(); }, 5000);
-  });
-
   const saved = localStorage.getItem('wellness_token');
   if(saved) {
     accessToken = saved;
@@ -719,7 +712,9 @@ function renderEntryPanel() {
 
   if(tracker.type==='cycle') {
     const lp=getLatestPeriodStart(); const phase=getCyclePhase(ds); const alreadyLogged=!!(log.periodStart);
-    bodyHtml=`<div class="period-info">${lp?`Last logged: <strong style="color:var(--text);">${lp}</strong>${phase?'<br>Currently in <strong style="color:var(--purple2);">'+phase.phase+'</strong> phase':'`}':`No period start logged yet.`}</div><div style="font-size:13px;color:var(--text2);margin-bottom:10px;">Mark <strong style="color:var(--text);">${ds}</strong> as a period start?</div><button class="btn-save" onclick="logPeriod('${ds}')">${alreadyLogged?'Update':'Log period start'}</button>${alreadyLogged?`<button class="btn-save btn-danger" style="margin-top:8px;" onclick="clearPeriod('${ds}')">Remove</button>`:''}`;
+    const periodInfo = lp ? 'Last logged: <strong style="color:var(--text);">'+lp+'</strong>'+(phase ? '<br>Currently in <strong style="color:var(--purple2);">'+phase.phase+'</strong> phase' : '') : 'No period start logged yet.';
+    const clearBtn = alreadyLogged ? '<button class="btn-save btn-danger" style="margin-top:8px;" onclick="clearPeriod(\''+ds+'\')">Remove</button>' : '';
+    bodyHtml='<div class="period-info">'+periodInfo+'</div><div style="font-size:13px;color:var(--text2);margin-bottom:10px;">Mark <strong style="color:var(--text);">'+ds+'</strong> as a period start?</div><button class="btn-save" onclick="logPeriod(\''+ds+'\')">'+(alreadyLogged?'Update':'Log period start')+'</button>'+clearBtn;
   }
 
   document.getElementById('entry-panel').innerHTML=`<div class="entry-panel-header"><div class="entry-panel-title">${tracker.emoji} ${tracker.label}</div><button class="entry-panel-close" onclick="closePanel()">✕</button></div><div class="entry-panel-body">${bodyHtml}</div>`;
